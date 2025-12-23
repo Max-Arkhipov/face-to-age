@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.env
+.venv/
+
+# Poetry
+.poetry/
+
+# macOS
+.DS_Store
+
+# Hydra
+outputs/
+multirun/
+
+# DVC
+.dvc/cache/
+
+# MLflow
+mlruns/
