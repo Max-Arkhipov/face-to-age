@@ -19,7 +19,9 @@ dependencies = [
     "torch (>=2.9.1,<3.0.0)",
     "torchvision (>=0.24.1,<0.25.0)",
     "pyopenssl (>=24.0.0)",
-    "cryptography (>=42.0.0)"
+    "cryptography (>=42.0.0)",
+    "lightning (>=2.6.0,<3.0.0)",
+    "ipywidgets (>=8.1.8,<9.0.0)"
 ]
 
 

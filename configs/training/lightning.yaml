@@ -1,0 +1,8 @@
+max_epochs: 10
+precision: 32
+
+loss:
+  name: mse
+
+optimizer:
+  name: adam

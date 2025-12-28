@@ -1,0 +1,4 @@
+name: mlflow
+
+experiment_name: "28_12_logs"
+tracking_uri: "http://127.0.0.1:8080"

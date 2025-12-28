@@ -1,0 +1,11 @@
+defaults:
+  - dataset: utkface
+  - dataloader: default
+  - preprocessing: image
+  - training: lightning
+  - model: simple
+  - logger: mlflow
+  - _self_
+
+seed: 42
+project_name: face_age_estimation

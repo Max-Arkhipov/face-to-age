@@ -1,14 +1,38 @@
 # Python
 __pycache__/
-*.py[cod]
-.env
-.venv/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+*.egg-info/
+*.egg
+*.pytest_cache/
+
+# Virtual environment
+venv/
+.env/
+.env.*
 
 # Poetry
 .poetry/
+poetry.lock
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# PyTorch / Lightning
+lightning_logs/
+*.pt
+*.ckpt
+
+# MLflow
+mlruns/
+mlflow.db
 
 # macOS
 .DS_Store
+Thumbs.db
 
 # Hydra
 outputs/
@@ -17,5 +41,5 @@ multirun/
 # DVC
 .dvc/cache/
 
-# MLflow
-mlruns/
+# Data
+data/
