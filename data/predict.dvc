@@ -1,0 +1,6 @@
+outs:
+- md5: 848e002417be0dc5cec500d7c3603dec.dir
+  size: 2577386
+  nfiles: 489
+  hash: md5
+  path: predict
