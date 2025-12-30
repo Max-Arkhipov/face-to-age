@@ -26,6 +26,7 @@ lightning_logs/
 *.pt
 *.ckpt
 *.pth
+*.csv
 
 # MLflow
 mlruns/
@@ -39,10 +40,9 @@ Thumbs.db
 outputs/
 multirun/
 
-# DVC
-.dvc/cache/
-/data/**
-!/data/**/*.dvc
+# Raw dataset (local only)
+data/UTKFace/
 
-# DVC internal
-.dvc/cache
+
+# DVC cache
+.dvc/cache/
