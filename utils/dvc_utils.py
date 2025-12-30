@@ -2,14 +2,11 @@ import subprocess
 from pathlib import Path
 
 
-def ensure_data(path: Path):
-    """
-    Ensures that data is available locally via DVC.
-    """
-    if path.exists() and any(path.iterdir()):
-        return
-
-    subprocess.run(
-        ["dvc", "pull", str(path)],
-        check=True,
-    )
+def dvc_pull_if_needed(paths, remote="gdrive"):
+    for path in paths:
+        path = Path(path)
+        if not path.exists() or not any(path.iterdir()):
+            print(f"{path} пуст или отсутствует, выполняем dvc pull...")
+            subprocess.run(["dvc", "pull", str(path), "-r", remote], check=True)
+        else:
+            print(f"{path} существует, пропускаем dvc pull.")

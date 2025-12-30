@@ -9,6 +9,7 @@ from face_to_age.data import UTKFaceDataModule
 from face_to_age.lightning import AgeRegressionModule
 from face_to_age.logger import build_logger
 from face_to_age.model import ConvRegressor, SimpleRegressor
+from utils.dvc_utils import dvc_pull_if_needed
 from utils.predictions import save_predictions
 
 
@@ -18,6 +19,8 @@ def infer(cfg: DictConfig):
     print("CONFIG:")
     print(cfg)
     print("=" * 80)
+
+    dvc_pull_if_needed([cfg.dataset.predict_data_dir])
 
     # DataModule
     datamodule = UTKFaceDataModule(cfg)

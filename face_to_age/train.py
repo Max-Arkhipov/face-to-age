@@ -9,6 +9,7 @@ from face_to_age.data import UTKFaceDataModule
 from face_to_age.lightning import AgeRegressionModule
 from face_to_age.logger import build_logger
 from face_to_age.model import ConvRegressor, SimpleRegressor
+from utils.dvc_utils import dvc_pull_if_needed
 
 
 @main(version_base=None, config_path="../configs", config_name="config")
@@ -17,6 +18,14 @@ def train(cfg: DictConfig):
     print("CONFIG:")
     print(cfg)
     print("=" * 80)
+
+    dvc_pull_if_needed(
+        [
+            cfg.dataset.train_data_dir,
+            cfg.dataset.val_data_dir,
+            cfg.dataset.test_data_dir,
+        ]
+    )
 
     # DataModule
     datamodule = UTKFaceDataModule(cfg)
