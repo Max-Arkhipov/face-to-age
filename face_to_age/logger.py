@@ -1,6 +1,8 @@
+import subprocess
+
 from lightning.pytorch.loggers import MLFlowLogger
 from omegaconf import DictConfig, OmegaConf
-import subprocess
+
 
 def get_git_commit_id():
     try:
@@ -8,6 +10,7 @@ def get_git_commit_id():
         return commit
     except Exception:
         return "unknown"
+
 
 def build_logger(cfg: DictConfig):
     if cfg.logger.name != "mlflow":

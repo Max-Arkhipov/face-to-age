@@ -17,7 +17,7 @@ class SimpleRegressor(torch.nn.Module):
 
     def forward(self, x):
         return self.model(x)
-    
+
 
 class ConvRegressor(torch.nn.Module):
     """Convolutional model for age regression from images"""
@@ -27,19 +27,14 @@ class ConvRegressor(torch.nn.Module):
         self.model = torch.nn.Sequential(
             torch.nn.Conv2d(3, 32, 3, stride=2, padding=1),
             torch.nn.ReLU(),
-
             torch.nn.Conv2d(32, 64, 3, stride=1, padding=1),
             torch.nn.ReLU(),
-
             torch.nn.Conv2d(64, 64, 3, stride=2, padding=1),
             torch.nn.ReLU(),
-
             torch.nn.Conv2d(64, 128, 3, stride=1, padding=1),
             torch.nn.ReLU(),
-
             torch.nn.Conv2d(128, 128, 3, stride=2, padding=1),
             torch.nn.ReLU(),
-
             torch.nn.AdaptiveAvgPool2d(6),
             torch.nn.Flatten(),
             torch.nn.Linear(128 * 6 * 6, 96),

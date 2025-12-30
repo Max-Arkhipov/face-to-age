@@ -18,6 +18,7 @@ PREDICT_RATIO = 0.05
 # =========================
 random.seed(SEED)
 
+
 def is_valid_utkface_image(path: Path) -> bool:
     """
     UTKFace filename format:
@@ -30,10 +31,7 @@ def is_valid_utkface_image(path: Path) -> bool:
 
 
 def main():
-    images = [
-        p for p in RAW_DIR.glob("*.jpg")
-        if is_valid_utkface_image(p)
-    ]
+    images = [p for p in RAW_DIR.glob("*.jpg") if is_valid_utkface_image(p)]
 
     print(f"Found {len(images)} valid UTKFace images")
 
@@ -55,8 +53,8 @@ def main():
 
     splits = {
         "train": remaining[:n_train],
-        "val": remaining[n_train:n_train + n_val],
-        "test": remaining[n_train + n_val:],
+        "val": remaining[n_train : n_train + n_val],
+        "test": remaining[n_train + n_val :],
     }
 
     # -------------------------

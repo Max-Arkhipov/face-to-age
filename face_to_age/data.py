@@ -1,27 +1,21 @@
-from typing import Any, Tuple
 from pathlib import Path
+from typing import Any, Tuple
 
-import torch
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
-from PIL import Image
 import lightning as L
+import torch
 from omegaconf import DictConfig
+from PIL import Image
+from torch.utils.data import DataLoader, Dataset
+from torchvision import transforms
 
 
 def build_transforms(cfg: DictConfig, train: bool):
     transforms_list = []
 
-    transforms_list.append(
-        transforms.Resize(tuple(cfg.image.size))
-    )
+    transforms_list.append(transforms.Resize(tuple(cfg.image.size)))
 
     if train and cfg.image.train.horizontal_flip_p > 0:
-        transforms_list.append(
-            transforms.RandomHorizontalFlip(
-                p=cfg.image.train.horizontal_flip_p
-            )
-        )
+        transforms_list.append(transforms.RandomHorizontalFlip(p=cfg.image.train.horizontal_flip_p))
 
     transforms_list.append(transforms.ToTensor())
 
@@ -40,7 +34,7 @@ class UTKFaceDataset(Dataset):
     UTKFace age regression dataset.
     Label (age) is parsed from filename: age_gender_race_*.jpg
     """
-    
+
     def __init__(self, data_dir: str, transform: transforms.Compose):
         self.paths = list(Path(data_dir).glob("*.jpg"))
         self.transform = transform
@@ -60,7 +54,7 @@ class UTKFaceDataset(Dataset):
         image = self.transform(image)
 
         return image, torch.tensor(age, dtype=torch.float32)
-    
+
 
 class UTKFacePredictDataset(Dataset):
     def __init__(self, data_dir: str, transform):
@@ -80,7 +74,7 @@ class UTKFacePredictDataset(Dataset):
         image = self.transform(image)
 
         return image, path.name
-    
+
 
 def init_dataloader(
     dataset: Any,
@@ -107,32 +101,24 @@ class UTKFaceDataModule(L.LightningDataModule):
         if stage in ("fit", None):
             self.train_dataset = UTKFaceDataset(
                 self.cfg.dataset.train_data_dir,
-                transform=build_transforms(
-                    self.cfg.preprocessing, train=True
-                ),
+                transform=build_transforms(self.cfg.preprocessing, train=True),
             )
 
             self.val_dataset = UTKFaceDataset(
                 self.cfg.dataset.val_data_dir,
-                transform=build_transforms(
-                    self.cfg.preprocessing, train=False
-                ),
+                transform=build_transforms(self.cfg.preprocessing, train=False),
             )
 
         if stage in ("test", None):
             self.test_dataset = UTKFaceDataset(
                 self.cfg.dataset.test_data_dir,
-                transform=build_transforms(
-                    self.cfg.preprocessing, train=False
-                ),
+                transform=build_transforms(self.cfg.preprocessing, train=False),
             )
 
         if stage == "predict":
             self.predict_dataset = UTKFacePredictDataset(
                 self.cfg.dataset.predict_data_dir,
-                transform=build_transforms(
-                    self.cfg.preprocessing, train=False
-                ),
+                transform=build_transforms(self.cfg.preprocessing, train=False),
             )
 
     def train_dataloader(self):

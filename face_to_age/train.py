@@ -1,13 +1,14 @@
-import torch
+from pathlib import Path
+
 import lightning as L
-from lightning.pytorch.loggers import TensorBoardLogger
-from omegaconf import DictConfig
+import torch
 from hydra import main
+from omegaconf import DictConfig
 
 from face_to_age.data import UTKFaceDataModule
-from face_to_age.model import SimpleRegressor, ConvRegressor
 from face_to_age.lightning import AgeRegressionModule
 from face_to_age.logger import build_logger
+from face_to_age.model import ConvRegressor, SimpleRegressor
 
 
 @main(version_base=None, config_path="../configs", config_name="config")
@@ -45,8 +46,14 @@ def train(cfg: DictConfig):
     # Test
     trainer.test(module, datamodule=datamodule)
 
-    # Сохраняем модель
-    torch.save(module.model.state_dict(), cfg.project_name + "_best_model.pth")
+    # Save model
+    ckpt_dir = Path(cfg.paths.checkpoints_dir)
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+
+    ckpt_path = ckpt_dir / cfg.infer.checkpoint_name
+    torch.save(module.model.state_dict(), ckpt_path)
+
+    print(f"Model saved to {ckpt_path}")
 
 
 if __name__ == "__main__":
