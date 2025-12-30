@@ -106,13 +106,7 @@ class AgeRegressionModule(L.LightningModule):
         opt_cfg = self.cfg.training.optimizer
 
         if opt_cfg.name == "adam":
-            optimizer = torch.optim.Adam(
-                self.model.parameters(),
-                # lr=opt_cfg.lr,
-                # betas=opt_cfg.betas,
-                # eps=opt_cfg.eps,
-                # weight_decay=opt_cfg.weight_decay,
-            )
+            optimizer = torch.optim.Adam(self.model.parameters())
         elif opt_cfg.name == "sgd":
             optimizer = torch.optim.SGD(
                 self.model.parameters(),

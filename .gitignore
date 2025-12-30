@@ -43,6 +43,5 @@ multirun/
 # Raw dataset (local only)
 data/UTKFace/
 
-
 # DVC cache
 .dvc/cache/
