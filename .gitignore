@@ -26,6 +26,8 @@ lightning_logs/
 *.pt
 *.ckpt
 *.pth
+
+# Files
 *.csv
 
 # MLflow
@@ -42,6 +44,22 @@ multirun/
 
 # Raw dataset (local only)
 data/UTKFace/
+
+# Dataset splits (DVC-tracked)
+data/train/
+data/val/
+data/test/
+data/predict/
+
+# Ignore everything except .dvc files
+/data/train/*
+!/data/train/**/*.dvc
+/data/val/*
+!/data/val/**/*.dvc
+/data/test/*
+!/data/test/**/*.dvc
+/data/predict/*
+!/data/predict/**/*.dvc
 
 # DVC cache
 .dvc/cache/
