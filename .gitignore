@@ -41,5 +41,11 @@ multirun/
 # DVC
 .dvc/cache/
 
-# Data
-data/
+# Игнорируем реальные данные
+/data/**
+
+# Но НЕ игнорируем dvc-метафайлы
+!/data/**/*.dvc
+
+# DVC internal
+.dvc/cache

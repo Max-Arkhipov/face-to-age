@@ -5,6 +5,7 @@ defaults:
   - training: lightning
   - model: simple
   - logger: mlflow
+  - paths: default
   - _self_
 
 seed: 42
