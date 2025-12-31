@@ -21,23 +21,27 @@ Setup
 
 Для запуска проекта необходимо подготовить окружение и зависимости.  
 
-1. Клонируем репозиторий  
+1. Клонируем репозиторий
 
-git clone https://github.com/Max-Arkhipov/face-to-age.git
+		git clone https://github.com/Max-Arkhipov/face-to-age.git
 
-2. Установка зависимостей через Poetry
+3. Задаем виртуальное окружение
 
-poetry install
+		conda create -n <имя_окружения> python=3.12
 
-3. Настройка DVC
+3. Установка зависимостей через Poetry
 
-dvc pull  
+		poetry install
+
+4. Настройка DVC
+
+		dvc pull  
 
 Эта команда скачает датасет и необходимые файлы для обучения и инференса из удалённого хранилища (Google Drive).  
 
-4. Запуск MLflow для мониторинга
+5. Запуск MLflow для мониторинга
 
-mlflow ui --host 127.0.0.1 --port 8080
+		mlflow ui --host 127.0.0.1 --port 8080
 
 Доступ к интерфейсу по адресу: http://127.0.0.1:8080￼
 
@@ -49,7 +53,7 @@ Train
 
 Пример запуска
 
-python -m face_to_age.train
+	python -m face_to_age.train
 
 Параметры задаются через конфиг configs/config.yaml:  
 	- dataset: пути к датасетам train, val, test, predict   
@@ -70,10 +74,11 @@ Infer
 
 Пример запуска
 
-python -m face_to_age.infer
+	python -m face_to_age.infer  
 
-	•	Скрипт загружает модель из checkpoints/best_model.pth.
-	•	Делает предсказания для изображений из data/predict/.
-	•	Сохраняет результаты в CSV файл preds/predictions.csv.
+- Скрипт загружает модель из checkpoints/best_model.pth.
+- Делает предсказания для изображений из data/predict/.
+- Сохраняет результаты в CSV файл preds/predictions.csv.
 
 Если данных нет локально, скрипт автоматически подтянет их через DVC.
+
