@@ -8,7 +8,14 @@ from omegaconf import DictConfig
 from face_to_age.data import UTKFaceDataModule
 from face_to_age.lightning import AgeRegressionModule
 from face_to_age.logger import build_logger
-from face_to_age.model import ConvRegressor, SimpleRegressor
+from face_to_age.model import (
+    ConvRegressor,
+    ConvRegressor_256,
+    ResNetRegressor,
+    ResNetRegressor_head,
+    ResNetRegressor_last,
+    SimpleRegressor,
+)
 from utils.dvc_utils import dvc_pull_if_needed
 
 
@@ -35,6 +42,14 @@ def train(cfg: DictConfig):
         model = SimpleRegressor(cfg.model.image_size)
     elif cfg.model.name == "conv_regressor":
         model = ConvRegressor()
+    elif cfg.model.name == "conv_regressor_256":
+        model = ConvRegressor_256()
+    elif cfg.model.name == "resnet_18":
+        model = ResNetRegressor()
+    elif cfg.model.name == "resnet_18_last":
+        model = ResNetRegressor_last()
+    elif cfg.model.name == "resnet_18_head":
+        model = ResNetRegressor_head()
     else:
         raise ValueError(f"Unknown model: {cfg.model.name}")
 
