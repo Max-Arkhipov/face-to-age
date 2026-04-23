@@ -1,0 +1,16 @@
+name: resnet_dldl_pt_fr
+
+backbone: resnet50
+pretrained: true
+freeze_backbone: false
+
+head: dldl # regression | dldl | hybrid | coral
+num_classes: 117
+
+loss:
+  name: dldl
+  sigma: 2.0
+
+optimizer:
+  name: adam
+  lr: 5e-4

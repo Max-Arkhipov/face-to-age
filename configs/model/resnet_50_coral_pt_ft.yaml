@@ -1,0 +1,22 @@
+name: resnet_50_coral_pt_ft
+checkpoint_name: resnet_50_coral_pt_ft.pth
+
+backbone: resnet50
+pretrained: true
+freeze_backbone: true
+
+head: coral
+num_classes: 117
+
+loss:
+  name: coral
+
+optimizer:
+  name: adamw
+  lr: 5e-4
+  weight_decay: 1e-2
+
+finetune:
+  enabled: true
+  unfreeze_epoch: 0
+  backbone_lr: 1e-4

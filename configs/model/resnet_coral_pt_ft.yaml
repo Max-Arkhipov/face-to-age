@@ -1,0 +1,23 @@
+name: resnet_coral_pt_ft
+
+backbone: resnet18
+pretrained: true
+
+# ВАЖНО: теперь True
+freeze_backbone: true
+
+head: coral
+num_classes: 117
+
+loss:
+  name: coral
+
+optimizer:
+  name: adamw
+  lr: 5e-4
+  weight_decay: 1e-2
+
+finetune:
+  enabled: true
+  unfreeze_epoch: 5
+  backbone_lr: 1e-4
