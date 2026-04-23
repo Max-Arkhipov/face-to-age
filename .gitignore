@@ -44,6 +44,7 @@ multirun/
 
 # Raw dataset (local only)
 data/UTKFace/
+datasets
 
 # Dataset splits (DVC-tracked)
 data/train/

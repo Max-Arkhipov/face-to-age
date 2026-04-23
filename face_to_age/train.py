@@ -6,16 +6,10 @@ from hydra import main
 from omegaconf import DictConfig
 
 from face_to_age.data import UTKFaceDataModule
+from face_to_age.finetuning import BackboneFinetuning
 from face_to_age.lightning import AgeRegressionModule
 from face_to_age.logger import build_logger
-from face_to_age.model import (
-    ConvRegressor,
-    ConvRegressor_256,
-    ResNetRegressor,
-    ResNetRegressor_head,
-    ResNetRegressor_last,
-    SimpleRegressor,
-)
+from face_to_age.model import AgeModel, ConvRegressor, ConvRegressor_256, SimpleRegressor
 from utils.dvc_utils import dvc_pull_if_needed
 
 
@@ -34,6 +28,17 @@ def train(cfg: DictConfig):
         ]
     )
 
+    # CallBack
+    callbacks = []
+
+    if cfg.model.get("finetune", {}).get("enabled", False):
+        callbacks.append(
+            BackboneFinetuning(
+                unfreeze_epoch=cfg.model.finetune.unfreeze_epoch,
+                backbone_lr=cfg.model.finetune.backbone_lr,
+            )
+        )
+
     # DataModule
     datamodule = UTKFaceDataModule(cfg)
 
@@ -44,14 +49,11 @@ def train(cfg: DictConfig):
         model = ConvRegressor()
     elif cfg.model.name == "conv_regressor_256":
         model = ConvRegressor_256()
-    elif cfg.model.name == "resnet_18":
-        model = ResNetRegressor()
-    elif cfg.model.name == "resnet_18_last":
-        model = ResNetRegressor_last()
-    elif cfg.model.name == "resnet_18_head":
-        model = ResNetRegressor_head()
     else:
-        raise ValueError(f"Unknown model: {cfg.model.name}")
+        try:
+            model = AgeModel(cfg)
+        except Exception as e:
+            raise ValueError(f"Unknown model: {cfg.model.name}. Error: {e}")
 
     module = AgeRegressionModule(model, cfg)
 
@@ -62,6 +64,7 @@ def train(cfg: DictConfig):
     trainer = L.Trainer(
         max_epochs=cfg.training.max_epochs,
         logger=logger,
+        callbacks=callbacks,
     )
 
     # Train
@@ -74,7 +77,7 @@ def train(cfg: DictConfig):
     ckpt_dir = Path(cfg.paths.checkpoints_dir)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
 
-    ckpt_path = ckpt_dir / cfg.infer.checkpoint_name
+    ckpt_path = ckpt_dir / cfg.model.checkpoint_name
     torch.save(module.model.state_dict(), ckpt_path)
 
     print(f"Model saved to {ckpt_path}")
