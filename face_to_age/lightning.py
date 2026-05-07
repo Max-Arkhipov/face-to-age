@@ -2,16 +2,18 @@ import lightning as L
 import torch
 import torch.nn.functional as F
 import torchmetrics
+from omegaconf import OmegaConf
 
 
 class AgeRegressionModule(L.LightningModule):
     def __init__(self, model, cfg):
         super().__init__()
         self.model = model
+        self.save_hyperparameters(
+            {"cfg": OmegaConf.to_container(cfg, resolve=True)}, ignore=["model"]
+        )
         self.cfg = cfg
-
         loss_name = cfg.model.loss.name
-
         head = cfg.model.head
         self.is_reg = head == "regression"
         self.is_dldl = head == "dldl"
@@ -36,8 +38,6 @@ class AgeRegressionModule(L.LightningModule):
 
         # Буфер для ожидания возраста
         self.register_buffer("age_range", torch.arange(cfg.model.num_classes).float())
-
-        self.save_hyperparameters(ignore=["model"])
 
     def forward(self, x):
         return self.model(x)
@@ -193,3 +193,42 @@ class AgeRegressionModule(L.LightningModule):
             )
 
         raise ValueError(f"Unknown optimizer: {opt_cfg.name}")
+
+    """def configure_optimizers(self):
+        opt_cfg = self.cfg.model.optimizer
+
+        # 1. Подготовка параметров (только head, backbone заморожен)
+        head_params = [p for n, p in self.model.named_parameters() if "backbone" not in n]
+        param_groups = [{"params": head_params, "lr": opt_cfg.lr}]
+
+        # 2. Инициализация оптимизатора
+        if opt_cfg.name == "adam":
+            optimizer = torch.optim.Adam(param_groups, lr=opt_cfg.lr)
+        elif opt_cfg.name == "adamw":
+            optimizer = torch.optim.AdamW(param_groups,
+                                          lr=opt_cfg.lr,
+                                          weight_decay=opt_cfg.weight_decay)
+        elif opt_cfg.name == "sgd":
+            optimizer = torch.optim.SGD(param_groups,
+                                        lr=opt_cfg.lr,
+                                        momentum=opt_cfg.get("momentum", 0.9),
+                                        weight_decay=opt_cfg.weight_decay)
+        else:
+            raise ValueError(f"Unknown optimizer: {opt_cfg.name}")
+
+        # 3. Добавление шедулера
+        # Пример: CosineAnnealingLR (можно заменить на любой другой)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=self.trainer.max_epochs, # общее кол-во эпох
+            eta_min=1e-6                   # минимальный LR
+        )
+
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "interval": "epoch",       # обновлять каждый раз в конце эпохи
+                "frequency": 1,
+            },
+        }"""

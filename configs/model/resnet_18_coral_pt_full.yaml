@@ -1,7 +1,7 @@
-name: resnet_50_coral_pt_ft
-checkpoint_name: resnet_50_coral_pt_ft.pth
+name: resnet_18_coral_pt_full
+checkpoint_name: resnet_18_coral_pt_full.pth
 
-backbone: resnet50
+backbone: resnet18
 pretrained: true
 freeze_backbone: true
 
@@ -18,5 +18,5 @@ optimizer:
 
 finetune:
   enabled: true
-  unfreeze_epoch: 2
-  backbone_lr: 1e-4
+  unfreeze_epoch: 0
+  backbone_lr: 3e-4

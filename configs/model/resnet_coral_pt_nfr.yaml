@@ -1,4 +1,5 @@
 name: resnet_coral_pt_nfr
+checkpoint_name: resnet_coral_pt_nfr.pth
 
 backbone: resnet18
 pretrained: true

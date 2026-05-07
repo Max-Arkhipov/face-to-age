@@ -20,3 +20,17 @@ class BackboneFinetuning(BaseFinetuning):
                 optimizer=optimizer,
                 lr=self.backbone_lr,
             )
+
+    """def finetune_function(self, pl_module, current_epoch, optimizer):
+        if current_epoch == self.unfreeze_epoch:
+            # Размораживаем только четвертый (последний) блок ResNet
+            # В torchvision.models.resnet18 это слой 'layer4'
+            target_module = pl_module.model.backbone.layer4
+
+            print(f"\n>>> Unfreezing layer4 at epoch {current_epoch}")
+
+            self.unfreeze_and_add_param_group(
+                modules=target_module,
+                optimizer=optimizer,
+                lr=self.backbone_lr,
+            )"""

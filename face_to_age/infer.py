@@ -3,12 +3,11 @@ from pathlib import Path
 import lightning as L
 import torch
 from hydra import main
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 from face_to_age.data import UTKFaceDataModule
 from face_to_age.lightning import AgeRegressionModule
-from face_to_age.logger import build_logger
-from face_to_age.model import ConvRegressor, SimpleRegressor
+from face_to_age.model import AgeModel
 from utils.dvc_utils import dvc_pull_if_needed
 from utils.predictions import save_predictions
 
@@ -22,30 +21,39 @@ def infer(cfg: DictConfig):
 
     dvc_pull_if_needed([cfg.dataset.predict_data_dir])
 
-    # DataModule
-    datamodule = UTKFaceDataModule(cfg)
-
     # Model
-    if cfg.model.name == "simple_regressor":
-        model = SimpleRegressor(cfg.model.image_size)
-    elif cfg.model.name == "conv_regressor":
-        model = ConvRegressor()
-    else:
-        raise ValueError(f"Unknown model: {cfg.model.name}")
-
-    module = AgeRegressionModule(model, cfg)
-
     ckpt_path = Path(cfg.paths.checkpoints_dir) / cfg.infer.checkpoint_name
 
     if not ckpt_path.exists():
         raise FileNotFoundError(f"Checkpoint not found: {ckpt_path}")
 
-    print(f"Loading model from {ckpt_path}")
-    state_dict = torch.load(ckpt_path)
-    module.model.load_state_dict(state_dict)
+    checkpoint = torch.load(ckpt_path, map_location="cpu", weights_only=False)
 
-    logger = build_logger(cfg)
-    trainer = L.Trainer(logger=logger)
+    # Путь к чекпоинту из конфига
+    ckpt_path = f"{cfg.paths.checkpoints_dir}/{cfg.infer.checkpoint_name}"
+
+    # Читаем конфиг прямо из чекпоинта, чтобы точно знать архитектуру
+    checkpoint = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+
+    # train_cfg = OmegaConf.create(checkpoint["hyper_parameters"])
+    train_cfg = OmegaConf.create(checkpoint["hyper_parameters"]["cfg"])
+
+    # DataModule
+    datamodule = UTKFaceDataModule(train_cfg)
+
+    # 3. Инициализируем AgeModel (тот самый backbone + head)
+    # Используем train_cfg, чтобы архитектура совпала с весами
+    base_model = AgeModel(train_cfg)
+
+    print(f"Loading model from {ckpt_path}")
+    module = AgeRegressionModule.load_from_checkpoint(
+        ckpt_path, model=base_model, cfg=train_cfg, strict=False, weights_only=False
+    )
+
+    # module = AgeRegressionModule.load_from_checkpoint(ckpt_path, weights_only=False)
+
+    # logger = build_logger(train_cfg)
+    trainer = L.Trainer()
 
     predictions = trainer.predict(module, datamodule=datamodule)
 

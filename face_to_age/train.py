@@ -1,8 +1,6 @@
-from pathlib import Path
-
 import lightning as L
-import torch
 from hydra import main
+from lightning.pytorch.callbacks import ModelCheckpoint
 from omegaconf import DictConfig
 
 from face_to_age.data import UTKFaceDataModule
@@ -30,6 +28,17 @@ def train(cfg: DictConfig):
 
     # CallBack
     callbacks = []
+
+    ckpt_callback = ModelCheckpoint(
+        dirpath=cfg.paths.checkpoints_dir,
+        filename=cfg.model.checkpoint_name.replace(".pth", ""),
+        monitor="val_mae",
+        mode="min",
+        save_top_k=1,
+        enable_version_counter=False,
+    )
+
+    callbacks.append(ckpt_callback)
 
     if cfg.model.get("finetune", {}).get("enabled", False):
         callbacks.append(
@@ -74,13 +83,12 @@ def train(cfg: DictConfig):
     trainer.test(module, datamodule=datamodule)
 
     # Save model
-    ckpt_dir = Path(cfg.paths.checkpoints_dir)
-    ckpt_dir.mkdir(parents=True, exist_ok=True)
+    # ckpt_dir = Path(cfg.paths.checkpoints_dir)
+    # ckpt_dir.mkdir(parents=True, exist_ok=True)
 
-    ckpt_path = ckpt_dir / cfg.model.checkpoint_name
-    torch.save(module.model.state_dict(), ckpt_path)
-
-    print(f"Model saved to {ckpt_path}")
+    # ckpt_path = ckpt_dir / cfg.model.checkpoint_name
+    # torch.save(module.model.state_dict(), ckpt_path)
+    print(f"Best checkpoint: {ckpt_callback.best_model_path}")
 
 
 if __name__ == "__main__":

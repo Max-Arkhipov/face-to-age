@@ -1,5 +1,8 @@
 image:
   size: [224, 224]
+  input_size: [224, 224]
+  input_extension: [0.0, 0.0]
+  bbox_extension: [0.0, 0.0]
 
   train:
     horizontal_flip_p: 0.5

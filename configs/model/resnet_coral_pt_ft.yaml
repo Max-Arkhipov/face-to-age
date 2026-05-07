@@ -1,9 +1,8 @@
 name: resnet_coral_pt_ft
+checkpoint_name: resnet_18_coral_pt_ft.pth
 
 backbone: resnet18
 pretrained: true
-
-# ВАЖНО: теперь True
 freeze_backbone: true
 
 head: coral
@@ -15,9 +14,9 @@ loss:
 optimizer:
   name: adamw
   lr: 5e-4
-  weight_decay: 1e-2
+  weight_decay: 1e-4
 
 finetune:
   enabled: true
-  unfreeze_epoch: 5
-  backbone_lr: 1e-4
+  unfreeze_epoch: 2
+  backbone_lr: 3e-4

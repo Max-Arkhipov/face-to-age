@@ -1,2 +1,6 @@
+data_dir: data/raw
+processed_dir: data/processed
+data_image: data/data_image
+data_pred: data/predict
 pred_dir: preds
 checkpoints_dir: checkpoints
