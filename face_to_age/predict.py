@@ -44,26 +44,10 @@ class FacePredictor:
         # Извлекаем ключевые точки (InsightFace даёт 106 или 68 точек)
         lm = face.landmark_2d_106
 
-        # Примерные координаты (можно подстроить)
-        # eye_left = np.mean([lm[36], lm[39]], axis=0).astype(int)
-        # eye_right = np.mean([lm[42], lm[45]], axis=0).astype(int)
-        # mouth_avg = np.mean([lm[88], lm[97]], axis=0).astype(int)
-
+        # Находим координаты по средним
         eye_left = np.mean(lm[35:42], axis=0).astype(int)
         eye_right = np.mean(lm[89:96], axis=0).astype(int)
         mouth_avg = np.mean(lm[52:72], axis=0).astype(int)
-
-        eye_avg = (eye_left + eye_right) * 0.5
-        eye_to_eye = eye_left - eye_right  # right eye to left eye vector
-        eye_to_mouth = mouth_avg - eye_avg  # eye center to mouth center vector
-
-        print("eye_avg:", eye_avg)
-        print("eye_to_eye:", eye_to_eye)
-        print("eye_to_mouth:", eye_to_mouth)
-
-        print("eye_left:", eye_left)
-        print("eye_right:", eye_right)
-        print("mouth_avg:", mouth_avg)
 
         # Получаем выровненный bbox
         aligned_bbox = get_alignment_transformation(
@@ -120,9 +104,6 @@ class FacePredictor:
 
         print(f"Изображение выровнено и сохранено как: {output_path}")
         print(f"Размер после обработки: {aligned_img.shape}")
-
-        # TODO: Здесь добавишь вызов модели
-        # example: age = model.predict(preprocess(aligned_img))
 
         return {
             "status": "success",

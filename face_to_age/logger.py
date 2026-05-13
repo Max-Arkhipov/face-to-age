@@ -21,7 +21,7 @@ def build_logger(cfg: DictConfig):
     head = cfg.model.get("head", "no_head")
     lr = cfg.model.optimizer.lr
 
-    # Формируем красивую строку, например: resnet18|coral|lr:0.0005
+    # Формируем красивую строку
     generated_run_name = f"{backbone}-{head}-lr:{lr}"
 
     logger = MLFlowLogger(

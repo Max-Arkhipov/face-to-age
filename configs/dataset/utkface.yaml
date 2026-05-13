@@ -3,7 +3,7 @@ name: utkface
 train_data_dir: data/processed/utkface/train
 val_data_dir: data/processed/utkface/val
 test_data_dir: data/processed/utkface/test
-predict_data_dir: data/predict
+predict_data_dir: data/processed/utkface/test
 
 database: "data/databases/UTKFace_aligned.json"
 benchmark: "data/benchmarks/UTKFace.yaml"

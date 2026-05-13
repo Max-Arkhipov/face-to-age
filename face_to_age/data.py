@@ -48,6 +48,7 @@ class UTKFaceDataset(Dataset):
         transform: transforms.Compose,
         use_dldl: bool = False,
         use_coral: bool = False,
+        use_cls: bool = False,
         num_classes: int = 117,
         sigma: float = 2,
     ):
@@ -56,6 +57,7 @@ class UTKFaceDataset(Dataset):
 
         self.use_coral = use_coral
         self.use_dldl = use_dldl
+        self.use_cls = use_cls
         self.num_classes = num_classes
         self.sigma = sigma
 
@@ -95,6 +97,13 @@ class UTKFaceDataset(Dataset):
                 "image": image,
                 "age": age_tensor,
                 "dist": dist,
+            }
+
+        # -------- MV -------
+        if self.use_cls:
+            return {
+                "image": image,
+                "age": age_tensor,
             }
 
         # -------- REG --------
@@ -146,6 +155,7 @@ class UTKFaceDataModule(L.LightningDataModule):
         use_dldl = self.cfg.model.loss.name in ["dldl", "dldl_hybrid"]
         use_coral = self.cfg.model.loss.name == "coral"
         sigma = self.cfg.model.loss.get("sigma", 2.0)
+        use_cls = self.cfg.model.head == "classification"
 
         if stage in ("fit", None):
             self.train_dataset = UTKFaceDataset(
@@ -153,6 +163,7 @@ class UTKFaceDataModule(L.LightningDataModule):
                 transform=build_transforms(self.cfg.preprocessing, train=True),
                 use_dldl=use_dldl,
                 use_coral=use_coral,
+                use_cls=use_cls,
                 num_classes=self.cfg.model.num_classes,
                 sigma=sigma,
             )
@@ -162,6 +173,7 @@ class UTKFaceDataModule(L.LightningDataModule):
                 transform=build_transforms(self.cfg.preprocessing, train=False),
                 use_dldl=use_dldl,
                 use_coral=use_coral,
+                use_cls=use_cls,
                 num_classes=self.cfg.model.num_classes,
                 sigma=sigma,
             )
@@ -172,6 +184,7 @@ class UTKFaceDataModule(L.LightningDataModule):
                 transform=build_transforms(self.cfg.preprocessing, train=False),
                 use_dldl=use_dldl,
                 use_coral=use_coral,
+                use_cls=use_cls,
                 num_classes=self.cfg.model.num_classes,
                 sigma=sigma,
             )

@@ -1,0 +1,21 @@
+name: efficientnet_b0_reg_pt_78
+checkpoint_name: efficientnet_b0_reg_pt_78.pth
+backbone: efficientnet_b0
+pretrained: true
+freeze_backbone: true
+head: regression
+num_classes: 117
+
+loss:
+  name: mse
+
+optimizer:
+  name: adamw
+  lr: 5e-4
+  weight_decay: 1e-4
+
+finetune:
+  enabled: true
+  unfreeze_epoch: 2
+  backbone_lr: 1e-5
+  unfreeze_layers: ["features.8", "features.7"]

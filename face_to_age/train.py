@@ -41,10 +41,15 @@ def train(cfg: DictConfig):
     callbacks.append(ckpt_callback)
 
     if cfg.model.get("finetune", {}).get("enabled", False):
+        ft_cfg = cfg.model.finetune
         callbacks.append(
             BackboneFinetuning(
-                unfreeze_epoch=cfg.model.finetune.unfreeze_epoch,
-                backbone_lr=cfg.model.finetune.backbone_lr,
+                unfreeze_epoch=ft_cfg.unfreeze_epoch,
+                backbone_lr=ft_cfg.backbone_lr,
+                backbone_name=cfg.model.backbone,
+                unfreeze_layers=list(ft_cfg.unfreeze_layers)
+                if ft_cfg.get("unfreeze_layers")
+                else None,
             )
         )
 
@@ -82,12 +87,6 @@ def train(cfg: DictConfig):
     # Test
     trainer.test(module, datamodule=datamodule)
 
-    # Save model
-    # ckpt_dir = Path(cfg.paths.checkpoints_dir)
-    # ckpt_dir.mkdir(parents=True, exist_ok=True)
-
-    # ckpt_path = ckpt_dir / cfg.model.checkpoint_name
-    # torch.save(module.model.state_dict(), ckpt_path)
     print(f"Best checkpoint: {ckpt_callback.best_model_path}")
 
 

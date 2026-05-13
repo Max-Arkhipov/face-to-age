@@ -63,6 +63,9 @@ class AgeModel(nn.Module):
         elif self.head_type == "coral":
             self.head = nn.Linear(in_features, num_classes - 1)
 
+        elif self.head_type == "classification":
+            self.head = nn.Linear(in_features, num_classes)
+
         else:
             raise ValueError(f"Unknown head type: {self.head_type}")
 
@@ -80,6 +83,9 @@ class AgeModel(nn.Module):
             return self.dist_head(shared), self.reg_head(shared).squeeze(1)
 
         elif self.head_type == "coral":
+            return self.head(features)
+
+        elif self.head_type == "classification":
             return self.head(features)
 
 

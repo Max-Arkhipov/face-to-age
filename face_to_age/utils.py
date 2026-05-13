@@ -1,7 +1,3 @@
-"""
-Implements a multitude of helper methods, mainly for facial alignment.
-"""
-
 import os
 import warnings
 from typing import Dict, List, Tuple
@@ -12,12 +8,6 @@ import torch
 
 
 def create_dir(path):
-    """
-    Create directory if does not exists.
-
-    Args:
-        path (str): Path of directory to be created.
-    """
     if not os.path.exists(path):
         os.makedirs(path)
 
