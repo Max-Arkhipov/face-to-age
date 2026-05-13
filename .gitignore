@@ -54,9 +54,9 @@ data/val/
 data/test/
 data/predict/
 data/raw
-data/databases
+# data/databases
 data/processed
-data/benchmarks
+# data/benchmarks
 data/image
 
 # Ignore everything except .dvc files

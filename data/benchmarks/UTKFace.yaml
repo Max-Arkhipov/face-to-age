@@ -1,0 +1,7 @@
+- database: "data/databases/UTKFace_aligned.json"
+  tag: "UTKFace"
+  split: 
+  - trn: [0,1,2,3,4,5]
+    val: [6,7]
+    tst: [8,9]
+ 
