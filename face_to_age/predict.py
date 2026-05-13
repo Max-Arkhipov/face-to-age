@@ -1,4 +1,3 @@
-# face_to_age/predict.py
 from pathlib import Path
 from typing import Optional
 
