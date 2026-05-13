@@ -1,0 +1,8 @@
+# configs/prepare.yaml
+defaults:
+  - paths: default
+  - dataset: utkface
+  - preprocessing: image
+  - _self_
+
+name: "utkface_aligned_224"

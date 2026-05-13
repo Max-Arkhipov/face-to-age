@@ -1,0 +1,22 @@
+name: resnet_18_reg_pt_full
+checkpoint_name: resnet_18_reg_pt_full.pth
+
+backbone: resnet18
+pretrained: true
+freeze_backbone: true
+
+head: regression
+num_classes: 117
+
+loss:
+  name: mse
+
+optimizer:
+  name: adamw
+  lr: 5e-4
+  weight_decay: 1e-4
+
+finetune:
+  enabled: true
+  unfreeze_epoch: 2
+  backbone_lr: 3e-4

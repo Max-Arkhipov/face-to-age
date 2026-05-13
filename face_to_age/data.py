@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Tuple
+from typing import Any
 
 import lightning as L
 import torch
@@ -7,6 +7,18 @@ from omegaconf import DictConfig
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
+
+
+def create_label_distribution(age, num_classes=117, sigma=2):
+    x = torch.arange(num_classes).float()
+    dist = torch.exp(-((x - age) ** 2) / (2 * sigma**2))
+    dist = dist / dist.sum()
+    return dist
+
+
+def create_coral_target(age, num_classes):
+    levels = torch.arange(num_classes - 1)
+    return (age > levels).float()
 
 
 def build_transforms(cfg: DictConfig, train: bool):
@@ -30,14 +42,24 @@ def build_transforms(cfg: DictConfig, train: bool):
 
 
 class UTKFaceDataset(Dataset):
-    """
-    UTKFace age regression dataset.
-    Label (age) is parsed from filename: age_gender_race_*.jpg
-    """
-
-    def __init__(self, data_dir: str, transform: transforms.Compose):
+    def __init__(
+        self,
+        data_dir: str,
+        transform: transforms.Compose,
+        use_dldl: bool = False,
+        use_coral: bool = False,
+        use_cls: bool = False,
+        num_classes: int = 117,
+        sigma: float = 2,
+    ):
         self.paths = list(Path(data_dir).glob("*.jpg"))
         self.transform = transform
+
+        self.use_coral = use_coral
+        self.use_dldl = use_dldl
+        self.use_cls = use_cls
+        self.num_classes = num_classes
+        self.sigma = sigma
 
         if len(self.paths) == 0:
             raise FileNotFoundError(f"No .jpg images found in {data_dir}")
@@ -45,15 +67,47 @@ class UTKFaceDataset(Dataset):
     def __len__(self) -> int:
         return len(self.paths)
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+    def __getitem__(self, idx: int):
         path = self.paths[idx]
 
         image = Image.open(path).convert("RGB")
         age = float(path.name.split("_")[0])
 
         image = self.transform(image)
+        age_tensor = torch.tensor(age, dtype=torch.float32)
 
-        return image, torch.tensor(age, dtype=torch.float32)
+        # -------- CORAL --------
+        if self.use_coral:
+            coral = create_coral_target(age, self.num_classes)
+            return {
+                "image": image,
+                "age": age_tensor,
+                "coral": coral,
+            }
+
+        # -------- DLDL --------
+        if self.use_dldl:
+            dist = create_label_distribution(
+                age,
+                num_classes=self.num_classes,
+                sigma=self.sigma,
+            ).float()
+
+            return {
+                "image": image,
+                "age": age_tensor,
+                "dist": dist,
+            }
+
+        # -------- MV -------
+        if self.use_cls:
+            return {
+                "image": image,
+                "age": age_tensor,
+            }
+
+        # -------- REG --------
+        return image, age_tensor
 
 
 class UTKFacePredictDataset(Dataset):
@@ -98,21 +152,41 @@ class UTKFaceDataModule(L.LightningDataModule):
         self.cfg = cfg
 
     def setup(self, stage=None):
+        use_dldl = self.cfg.model.loss.name in ["dldl", "dldl_hybrid"]
+        use_coral = self.cfg.model.loss.name == "coral"
+        sigma = self.cfg.model.loss.get("sigma", 2.0)
+        use_cls = self.cfg.model.head == "classification"
+
         if stage in ("fit", None):
             self.train_dataset = UTKFaceDataset(
                 self.cfg.dataset.train_data_dir,
                 transform=build_transforms(self.cfg.preprocessing, train=True),
+                use_dldl=use_dldl,
+                use_coral=use_coral,
+                use_cls=use_cls,
+                num_classes=self.cfg.model.num_classes,
+                sigma=sigma,
             )
 
             self.val_dataset = UTKFaceDataset(
                 self.cfg.dataset.val_data_dir,
                 transform=build_transforms(self.cfg.preprocessing, train=False),
+                use_dldl=use_dldl,
+                use_coral=use_coral,
+                use_cls=use_cls,
+                num_classes=self.cfg.model.num_classes,
+                sigma=sigma,
             )
 
         if stage in ("test", None):
             self.test_dataset = UTKFaceDataset(
                 self.cfg.dataset.test_data_dir,
                 transform=build_transforms(self.cfg.preprocessing, train=False),
+                use_dldl=use_dldl,
+                use_coral=use_coral,
+                use_cls=use_cls,
+                num_classes=self.cfg.model.num_classes,
+                sigma=sigma,
             )
 
         if stage == "predict":

@@ -1,0 +1,14 @@
+name: resnet_dldl
+image_size: 224
+num_classes: 117
+
+max_epochs: 10
+precision: 32
+
+loss:
+  name: dldl
+  sigma: 2.0
+
+optimizer:
+  name: adam
+  lr: 5e-4

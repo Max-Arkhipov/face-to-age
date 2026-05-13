@@ -1,4 +1,4 @@
 name: mlflow
-
-experiment_name: "28_12_logs"
+run_name: baseline
+experiment_name: "age-estimation"
 tracking_uri: "http://127.0.0.1:8080"

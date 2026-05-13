@@ -1,0 +1,22 @@
+name: resnet_50_cemv_pt_ft_full
+checkpoint_name: resnet_50_cemv_pt_ft_full.pth
+backbone: resnet50
+pretrained: true
+freeze_backbone: true
+head: classification
+num_classes: 117
+
+loss:
+  name: ce_mv
+  lambda_mean: 0.2
+  lambda_var: 0.05
+
+optimizer:
+  name: adamw
+  lr: 5e-4
+  weight_decay: 1e-4
+
+finetune:
+  enabled: true
+  unfreeze_epoch: 2
+  backbone_lr: 1e-4

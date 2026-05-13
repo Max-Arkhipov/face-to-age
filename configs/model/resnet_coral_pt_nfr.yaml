@@ -1,0 +1,16 @@
+name: resnet_coral_pt_nfr
+checkpoint_name: resnet_coral_pt_nfr.pth
+
+backbone: resnet18
+pretrained: true
+freeze_backbone: false
+
+head: coral # regression | dldl | hybrid | coral
+num_classes: 117
+
+loss:
+  name: coral
+
+optimizer:
+  name: adam
+  lr: 5e-4

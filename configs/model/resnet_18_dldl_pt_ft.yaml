@@ -1,0 +1,22 @@
+name: resnet_18_dldl_pt_ft
+checkpoint_name: resnet_18_dldl_pt_ft.pth
+
+backbone: resnet18
+pretrained: true
+freeze_backbone: true
+
+head: dldl
+num_classes: 117
+
+loss:
+  name: dldl
+
+optimizer:
+  name: adamw
+  lr: 5e-4
+  weight_decay: 1e-4
+
+finetune:
+  enabled: true
+  unfreeze_epoch: 0
+  backbone_lr: 3e-4
