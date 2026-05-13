@@ -13,9 +13,6 @@ def create_dir(path):
 
 
 def compute_error(metric, true_label, pred_label):
-    """
-    Computes a metric from predicted and true labels.
-    """
     if metric == "0/1":
         err = np.mean(true_label != pred_label)
     elif metric == "mae":
@@ -29,10 +26,6 @@ def compute_error(metric, true_label, pred_label):
 
 
 def get_loss_matrix(n_y, loss):
-    """
-    Prepares a loss matrix for efficient computation of some metrics.
-    The loss matrix holds the loss for every combination of predicted and true label.
-    """
     L = torch.zeros(n_y, n_y)
     for y in range(n_y):
         for yy in range(n_y):
@@ -54,37 +47,6 @@ def get_alignment_transformation(
     eye_to_eye_scale_multipler: float = 2.0,
     eye_to_mouth_scale_multipler: float = 1.8,
 ) -> np.ndarray:
-    """
-    Uses landmarks of the mouth and the eyes to construct
-    a new bounding box, which does not need
-    to be aligned with the axes and which can be used to
-    normalize the size and orientation of images.
-
-    Left / Right are meant from the observers perspective, i.e.,
-    left eye denotes the "biological right eye" etc.
-
-    Args:
-        mouth_avg (np.ndarray): [Col, Row] Coordinates of
-        the cemter point of the mouth.
-        eye_left (np.ndarray): [Col, Row] Coordinates of the
-        left (biological) eye center.
-        eye_right (np.ndarray): [Col, Row] Coordinates of the
-        right (biological) eye center.
-        eyes_distance_only (bool, optional): If True, the zoom
-        is determined always by the distance of the eyes,
-            and not the distance of the eyes to the mouth.
-            If True, can result in undesirable "zoomed" in image for
-            pictures of faces from the side. Defaults to False.
-        eye_to_eye_scale_multipler (float, optional):
-        Defines scaling of aligned image. Defaults to 2.0.
-        eye_to_mouth_scale_multipler (float, optional):
-        Defines scaling of aligned image. Defaults to 1.8.
-
-    Returns:
-        (np.ndarray): Array containing coordinates of
-        a quadrilateral corners that forms the aligned image.
-    """
-
     def unit_vector(vector):
         return vector / np.linalg.norm(vector)
 
@@ -139,12 +101,6 @@ def bbox_area(bbox):
 
 
 def pick_face_largest(list_of_bboxes, list_of_landmarks):
-    """
-    Selects the largest bounding box within the image.
-
-    Note that bounding box area outside of the image is included.
-    """
-
     max_area = -np.inf
     picked_bbox = None
     picked_landmarks = None
@@ -159,10 +115,6 @@ def pick_face_largest(list_of_bboxes, list_of_landmarks):
 
 
 def pick_face_centered(list_of_bboxes, list_of_landmarks, image_size):
-    """
-    Selects the bounding box closest to the center of the image.
-    """
-
     image_center = (np.array(image_size) / 2.0).astype(int)
     min_distance = np.inf
     picked_bbox = None
@@ -186,35 +138,6 @@ def crop_image(
     margin: Tuple[float] = (0, 0),
     one_based_bbox: bool = True,
 ):
-    """
-        Crop subimage around bounding box extended by a margin.
-
-    Input:
-     img
-     bbox = [A_col,A_row,B_col,B_row,C_col,C_row,D_col,D_row] bounding box
-     out_size (cols,rows) size of output image
-     margin
-     one_based_bbox [bool] if True assumes bbox to be given on 1-base coordinates
-    Output:
-     dst: output image [numpy array]
-     M: affine transformation used for the crop
-
-    Args:
-        img (np.ndarray): Input image.
-        bbox (List[int]): [A_col,A_row,B_col,B_row,C_col,C_row,D_col,D_row]
-        bounding box, see README for more information.
-        out_size (Tuple[int]): (cols,rows) size of output image.
-        margin (Tuple[float], optional): (horizontal, vertical) margin;
-        portion of bonding box size by which to extend the specified bounding box.
-          Defaults to (0, 0).
-        one_based_bbox (bool, optional):
-        If True assumes that the bbox is given on coordinates starting with
-        1 instead of 0. Defaults to True.
-
-    Returns:
-        _type_: _description_
-    """
-
     A = np.float32([bbox[0], bbox[1]])
     B = np.float32([bbox[2], bbox[3]])
     C = np.float32([bbox[4], bbox[5]])
@@ -242,18 +165,6 @@ def crop_image(
 def extract_aligment_landmarks(
     landmarks: Dict[str, List[int]],
 ) -> Tuple[Dict[str, np.ndarray], bool]:
-    """
-    Extracts facial landmarks used for face alignment.
-
-    Args:
-        landmarks (Dict[str, List[int]]):.
-
-    Returns:
-        Dict[str, np.ndarray]: Dictionary of landmarks.
-        Landmarks are specified by keys 'mouth_avg', 'eye_right', 'eye_left',
-        where values are [col, row] coordinates.
-        bool: Indication whether extraction was successful.
-    """
     eye_left = None
     eye_right = None
     mouth_avg = None
@@ -294,27 +205,6 @@ def extract_aligment_landmarks(
 
 
 def extract_L7_landmarks(landmarks: List[int]) -> Dict[str, np.ndarray]:
-    """
-    Extracts facial landmarks of interest from 7 facial landmarks defined below.
-
-    (Biological)
-    1. Left Eye Left Corner
-    2. Left Eye Right Corner
-    3. Right Eye Left Corner
-    4. Right Eye Right Corner
-    5. Nose Tip
-    6. Mouth Left Corner
-    7. Mouth Right Corner
-
-    Args:
-        landmarks (List[int]): List of 14 integers, which define
-        7 points of the dlib detector.
-
-    Returns:
-        Dict[str, np.ndarray]: Dictionary of landmarks. Landmarks
-        are specified by keys 'mouth_avg', 'eye_right', 'eye_left',
-        where values are [col, row] coordinates.
-    """
     if len(landmarks) != 14 or all(v == 0 for v in landmarks):
         # Expected to get 14 numbers representing 7 points
         return {}, False
@@ -338,41 +228,6 @@ def extract_L7_landmarks(landmarks: List[int]) -> Dict[str, np.ndarray]:
 
 
 def extract_L21_landmarks(landmarks: List[int]) -> Dict[str, np.ndarray]:
-    """
-    Extracts facial landmarks of interest from 21 facial landmarks defined below.
-
-    (Biological)
-    1. Left Brow Left Corner
-    2. Left Brow Center
-    3. Left Brow Right Corner
-    4. Right Brow Left Corner
-    5. Right Brow Center
-    6. Right Brow Right Corner
-    7. Left Eye Left Corner
-    8. Left Eye Right Corner
-    9. Nose Root
-    10. Right Eye Left Corner
-    11. Right Eye Right Corner
-    12. Left Ear
-    13. Nose Left
-    14. Nose Tip
-    15. Nose Right
-    16. Right Ear
-    17. Mouth Left Corner
-    18. Mouth Center Upper Lip
-    19. Mouth Center Lower Lip
-    20. Mouth Right Corner
-    21. Chin Center
-
-    Args:
-        landmarks (List[int]): List of 42 integers, which define 21 points
-          of the dlib detector.
-
-    Returns:
-        Dict[str, np.ndarray]: Dictionary of landmarks. Landmarks are specified
-        by keys 'mouth_avg', 'eye_right', 'eye_left', where values
-        are [col, row] coordinates.
-    """
     if len(landmarks) != 42 or all(v == 0 for v in landmarks):
         # Expected to get 42 numbers representing 21 points
         return {}, False
@@ -396,18 +251,6 @@ def extract_L21_landmarks(landmarks: List[int]) -> Dict[str, np.ndarray]:
 
 
 def extract_L68_landmarks(landmarks: List[int]) -> Dict[str, np.ndarray]:
-    """
-    Extracts facial landmarks of interest from the dlib 68 landmarks.
-
-    Args:
-        landmarks (List[int]): List of 136 integers, which define
-        68 points of the dlib detector.
-
-    Returns:
-        Dict[str, np.ndarray]: Dictionary of landmarks. Landmarks
-        are specified by keys 'mouth_avg', 'eye_right', 'eye_left',
-        where values are [col, row] coordinates.
-    """
     if len(landmarks) != 136 or all(v == 0 for v in landmarks):
         # Expected to get 136 numbers representing 68 points
         return {}, False
@@ -438,21 +281,6 @@ def draw_landmarks_and_bbox(
     line_thickness=2,
     circle_thickness=2,
 ) -> None:
-    """
-    Draws a bounding box and eye and center of mouth landmarks into an image.
-
-    Args:
-        img (np.ndarray): Image loaded with OpenCV.
-        bbox (List[int]): Bounding box [A_col, A_row, B_col, B_row,
-        C_col, C_row, D_col, D_row].
-        landmarks (Dict[str, np.ndarray]): Dictionary with keys
-        'mouth_avg', 'eye_right', 'eye_left' and values [col, row] coordinates.
-        line_color (tuple, optional): Color of bounding box. Defaults to (0, 0, 255).
-        line_thickness (int, optional): Thickness of bounding box. Defaults to 2.
-        circle_color (tuple, optional): Color of landmarks. Defaults to (0, 255, 0).
-        circle_thickness (int, optional): Thickness of landmarks. Defaults to 2.
-    """
-
     if bbox is not None:
         cv2.line(img=img, pt1=bbox[0:2], pt2=bbox[2:4], color=line_color, thickness=line_thickness)
         cv2.line(img=img, pt1=bbox[2:4], pt2=bbox[4:6], color=line_color, thickness=line_thickness)

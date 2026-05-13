@@ -37,9 +37,6 @@ class BackboneFinetuning(BaseFinetuning):
         self.unfreeze_epoch = unfreeze_epoch
         self.backbone_lr = backbone_lr
         self.backbone_name = backbone_name
-        # None / "all" — весь backbone
-        # integer N — последние N слоёв согласно BACKBONE_LAYERS
-        # list ["layer4", "layer3"] — конкретные слои
         self.unfreeze_layers = unfreeze_layers
 
     def freeze_before_training(self, pl_module):

@@ -17,8 +17,6 @@ from face_to_age.utils import crop_image, get_alignment_transformation
 
 
 class SingleImageDataset(Dataset):
-    """Обёртка над одним np.ndarray (BGR), повторяет логику UTKFacePredictDataset."""
-
     def __init__(self, image_bgr: np.ndarray, cfg):
         self.image = Image.fromarray(cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB))
         self.transform = build_transforms(cfg.preprocessing, train=False)
@@ -35,25 +33,19 @@ class TelegramFacePredictor:
         self.device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
         self.cfg = cfg
 
-        # =========================
         # FACE DETECTOR
-        # =========================
         self.detector = FaceAnalysis(
             allowed_modules=["detection", "landmark_2d_106"],
             providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
         )
         self.detector.prepare(ctx_id=-1, det_size=(320, 320), det_thresh=0.5)
 
-        # =========================
-        # PREPROCESS PARAMS (для align_and_crop)
-        # =========================
+        # PREPROCESS PARAMS
         self.input_size = cfg.preprocessing.image.input_size
         self.input_extension = cfg.preprocessing.image.input_extension
         self.bbox_extension = cfg.preprocessing.image.bbox_extension
 
-        # =========================
-        # LOAD MODEL (точно как в infer.py)
-        # =========================
+        # LOAD MODEL
         ckpt_path = Path(checkpoint_path)
         if not ckpt_path.exists():
             raise FileNotFoundError(f"Checkpoint not found: {ckpt_path}")
@@ -134,11 +126,11 @@ class TelegramFacePredictor:
         if aligned_img is None:
             return {"error": "Лицо не найдено"}
 
-        # 2. DataLoader с тем же transform, что в UTKFacePredictDataset
+        # 2. DataLoader
         dataset = SingleImageDataset(aligned_img, self.train_cfg)
         dataloader = DataLoader(dataset, batch_size=1, num_workers=0, shuffle=False)
 
-        # 3. trainer.predict → predict_step, идентично infer.py
+        # 3. trainer.predict → predict_step
         predictions = self.trainer.predict(self.module, dataloaders=dataloader)
 
         result = predictions[0]

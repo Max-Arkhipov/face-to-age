@@ -21,7 +21,6 @@ class AgeRegressionModule(L.LightningModule):
         self.is_coral = head == "coral"
         self.is_cls = head == "classification"
 
-        # Loss
         if self.is_dldl or self.is_hybrid:
             self.criterion_kl = torch.nn.KLDivLoss(reduction="batchmean")
 
@@ -37,11 +36,9 @@ class AgeRegressionModule(L.LightningModule):
         if self.is_cls:
             self.criterion_ce = torch.nn.CrossEntropyLoss()
 
-        # Metrics
         self.val_mae = torchmetrics.MeanAbsoluteError()
         self.test_mae = torchmetrics.MeanAbsoluteError()
 
-        # Буфер для ожидания возраста
         self.register_buffer("age_range", torch.arange(cfg.model.num_classes).float())
 
     def mean_variance_loss(self, probs, target):
@@ -121,22 +118,22 @@ class AgeRegressionModule(L.LightningModule):
 
     # ================= COMMON PRED =================
     def _predict_age(self, outputs):
-        # REG
+        # -------- REGRESSION ---------
         if self.is_reg:
             return outputs.view(-1)
 
-        # DLDL / HYBRID
+        # -------- DLDL / HYBRID ------
         if self.is_dldl or self.is_hybrid:
             logits = outputs if self.is_dldl else outputs[0]
             probs = F.softmax(logits, dim=1)
             return torch.sum(probs * self.age_range, dim=1)
 
-        # CORAL
+        # ----------- CORAL -----------
         if self.is_coral:
             probs = torch.sigmoid(outputs)
             return probs.sum(dim=1)
 
-        # MV
+        # ----------- CEMV ------------
         if self.is_cls:
             probs = F.softmax(outputs, dim=1)
             return torch.sum(probs * self.age_range, dim=1)
@@ -256,7 +253,6 @@ class AgeRegressionModule(L.LightningModule):
         else:
             raise ValueError(f"Unknown optimizer: {opt_cfg.name}")
 
-        # Scheduler — опционально
         scheduler_cfg = self.cfg.model.get("scheduler", None)
         if not scheduler_cfg or scheduler_cfg.get("name", None) is None:
             return optimizer
@@ -268,7 +264,7 @@ class AgeRegressionModule(L.LightningModule):
                 "scheduler": scheduler,
                 "interval": scheduler_cfg.get("interval", "epoch"),
                 "frequency": scheduler_cfg.get("frequency", 1),
-                "monitor": scheduler_cfg.get("monitor", "val_loss"),  # нужен для ReduceLROnPlateau
+                "monitor": scheduler_cfg.get("monitor", "val_loss"),
             },
         }
 
@@ -316,12 +312,12 @@ class AgeRegressionModule(L.LightningModule):
         raise ValueError(f"Unknown scheduler: {name}")
 
     def predict_age_with_uncertainty(self, outputs):
-        # REGRESSION
+        # ---------- REGRESSION -----------
         if self.is_reg:
             preds = outputs.view(-1)
             return preds, None
 
-        # DLDL / HYBRID / CLASSIFICATION
+        # - DLDL / HYBRID / CLASSIFICATION -
         if self.is_dldl or self.is_hybrid or self.is_cls:
             logits = outputs if not self.is_hybrid else outputs[0]
             probs = F.softmax(logits, dim=1)
@@ -334,15 +330,10 @@ class AgeRegressionModule(L.LightningModule):
 
             return mean, std
 
-        # CORAL
+        # ----------- CORAL -------------
         if self.is_coral:
             probs = torch.sigmoid(outputs)  # [B, num_classes-1] — P(age > k)
             mean = probs.sum(dim=1)  # предсказанный возраст
-
-            # Строим вероятности по классам: P(age == k)
-            # P(age == 0) = 1 - P(age > 0)
-            # P(age == k) = P(age > k-1) - P(age > k)
-            # P(age == K) = P(age > K-1)
             p_first = 1 - probs[:, :1]  # [B, 1]
             p_middle = probs[:, :-1] - probs[:, 1:]  # [B, num_classes-2]
             p_last = probs[:, -1:]  # [B, 1]
